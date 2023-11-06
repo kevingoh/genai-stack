@@ -8,30 +8,50 @@ Learn more about the details in the [technical blog post](https://neo4j.com/deve
 
 Create a `.env` file from the environment template file `env.example`
 
+Available variables:
+| Variable Name          | Default value                      | Description                                                             |
+|------------------------|------------------------------------|-------------------------------------------------------------------------|
+| OLLAMA_BASE_URL        | http://host.docker.internal:11434  | REQUIRED - URL to Ollama LLM API                                        |   
+| NEO4J_URI              | neo4j://database:7687              | REQUIRED - URL to Neo4j database                                        |
+| NEO4J_USERNAME         | neo4j                              | REQUIRED - Username for Neo4j database                                  |
+| NEO4J_PASSWORD         | password                           | REQUIRED - Password for Neo4j database                                  |
+| LLM                    | llama2                             | REQUIRED - Can be any Ollama model tag, or gpt-4 or gpt-3.5 or claudev2 |
+| EMBEDDING_MODEL        | sentence_transformer               | REQUIRED - Can be sentence_transformer, openai, aws or ollama           |
+| AWS_ACCESS_KEY_ID      |                                    | REQUIRED - Only if LLM=claudev2 or embedding_model=aws                  |
+| AWS_SECRET_ACCESS_KEY  |                                    | REQUIRED - Only if LLM=claudev2 or embedding_model=aws                  |
+| AWS_DEFAULT_REGION     |                                    | REQUIRED - Only if LLM=claudev2 or embedding_model=aws                  |
+| OPENAI_API_KEY         |                                    | REQUIRED - Only if LLM=gpt-4 or LLM=gpt-3.5 or embedding_model=openai   |
+| LANGCHAIN_ENDPOINT     | "https://api.smith.langchain.com"  | OPTIONAL - URL to Langchain Smith API                                   |
+| LANGCHAIN_TRACING_V2   | false                              | OPTIONAL - Enable Langchain tracing v2                                  |
+| LANGCHAIN_PROJECT      |                                    | OPTIONAL - Langchain project name                                       |
+| LANGCHAIN_API_KEY      |                                    | OPTIONAL - Langchain API key                                            |
+
 ## LLM Configuration
 MacOS and Linux users can use any LLM that's available via Ollama. Check the "tags" section under the model page you want to use on https://ollama.ai/library and write the tag for the value of the environment variable `LLM=` in th e`.env` file.
 All platforms can use GPT-3.5-turbo and GPT-4 (bring your own API keys for OpenAIs models).
 
 **MacOS**
-Install [Ollama](https://ollama.ai) in MacOS and start it before running `docker compose up`.
+Install [Ollama](https://ollama.ai) on MacOS and start it before running `docker compose up`.
 
 **Linux**
 No need to install Ollama manually, it will run in a container as
-part of the stack when running with the Linux profile: run `docker compose up --profile linux`.
+part of the stack when running with the Linux profile: run `docker compose --profile linux up`.
 Make sure to set the `OLLAMA_BASE_URL=http://llm:11434` in the `.env` file when using Ollama docker container.
+
+To use the Linux-GPU profile: run `docker compose --profile linux-gpu up`. Also change `OLLAMA_BASE_URL=http://llm-gpu:11434` in the `.env` file.
 
 **Windows**
 Not supported by Ollama, so Windows users need to generate a OpenAI API key and configure the stack to use `gpt-3.5` or `gpt-4` in the `.env` file.
 # Develop
 
 > [!WARNING]
-> There is a performance issue that impacts python applications in the latest release of Docker Desktop. Until a fix is available, please use [version `4.23.0`](https://docs.docker.com/desktop/release-notes/#4230) or earlier.
+> There is a performance issue that impacts python applications in the `4.24.x` releases of Docker Desktop. Please upgrade to the latest release before using this stack.
 
 **To start everything**
 ```
 docker compose up
 ```
-If changes to build scripts has been made, **rebuild**
+If changes to build scripts has been made, **rebuild**.
 ```
 docker compose up --build
 ```
@@ -39,7 +59,7 @@ docker compose up --build
 To enter **watch mode** (auto rebuild on file changes).
 First start everything, then in new terminal:
 ```
-docker compose alpha watch
+docker compose watch
 ```
 
 **Shutdown**
@@ -85,12 +105,12 @@ DB client: http://localhost:7474
 
 ---
 
-##  App 2 Loader
+##  App 2 - Loader
 
 UI: http://localhost:8502
 DB client: http://localhost:7474
 
-- import recent SO data for certain tags into a KG
+- import recent Stack Overflow data for certain tags into a KG
 - embed questions and answers and store in vector index
 - UI: choose tags, run import, see progress, some stats of data in the database
 - Load high ranked questions (regardless of tags) to support the ticket generation feature of App 1.
